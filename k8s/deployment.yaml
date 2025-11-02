@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iris-fastapi-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: iris-fastapi-app
+  template:
+    metadata:
+      labels:
+        app: iris-fastapi-app
+    spec:
+      containers:
+      - name: iris-fastapi-app
+        image: gcr.io/YOUR_PROJECT_ID/iris-fastapi-app:v1
+        ports:
+        - containerPort: 8000
+

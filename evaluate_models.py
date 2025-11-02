@@ -12,8 +12,8 @@ from mlflow.exceptions import MlflowException
 # change what model you want to use (registered model name)
 MODEL_NAME = "IRIS-Classifier-LogReg"
 
-TRACKING_URI = "http://127.0.0.1:8100"
-mlflow.set_tracking_uri(TRACKING_URI)
+MLFLOW_TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URI", "http://127.0.0.1:8100")
+mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
 def fetch_and_load_latest_model(model_name: str):
     """
@@ -37,28 +37,36 @@ def fetch_and_load_best_model(model_name: str, metric_key: str = "accuracy"):
     """
     Fetches the model version with the highest value for a specific metric.
     """
+    # mlflow.set_tracking_uri("http://127.0.0.1:8100")
     client = MlflowClient()
     
-    filter_string = f"name='{model_name}'"
-    ordered_versions = client.search_model_versions(
-        filter_string=filter_string,
-        order_by=[f"metrics.{metric_key} DESC"],
-        max_results=1
-    )
-    
-    if not ordered_versions:
-        print(f"No model versions found for registered model: {model_name}")
-        return None
+    all_versions = client.search_model_versions(filter_string=f"name='{model_name}'")
+    if not all_versions:
+        raise ValueError(f"No model versions found for registered model: {model_name}")
         
-    best_version_info = ordered_versions[0]
-    best_version = best_version_info.version
-    
-    print(f"Best model version found (by {metric_key}): Version {best_version} with {metric_key}={best_version_info.get_metric(metric_key)}")
+    best_acc = -1.0
+    best_model_version = None
+        
+    for mv in all_versions:
+        try:
+            run = client.get_run(mv.run_id)
+            current_acc = run.data.metrics.get(metric_key, -2.0)
+            
+            if current_acc > best_acc:
+                best_acc = current_acc
+                best_model_version = mv.version
+                
+        except MlflowException as e:
+            print(f"Warning: Could not fetch run metrics for version {mv.version}: {e}")
+            continue
 
-    # Load the models
-    model_uri = f"models:/{model_name}/{best_version}"
+    if best_model_version is None or best_acc == -1.0:
+        raise MlflowException(f"Failed to find a suitable model version with metric '{metric_key}'.")
+
+    print(f"Best model found: Version {best_model_version} with {metric_key}={best_acc:.4f}")
+
+    model_uri = f"models:/{model_name}/{best_model_version}"
     loaded_model = mlflow.pyfunc.load_model(model_uri)
-    
     return loaded_model
 
 def run_evaluation(model_type:str):
@@ -70,7 +78,7 @@ def run_evaluation(model_type:str):
     elif model_type=="best":
         model = fetch_and_load_best_model(MODEL_NAME)
     else:
-        print("model type can only be 'best' or 'latest'"
+        print("model type can only be 'best' or 'latest'")
 
     if model is None:
         print("Evaluation pipeline aborted due to failure to load model.")
@@ -81,5 +89,3 @@ def run_evaluation(model_type:str):
     y_pred = model.predict(X_test)
     acc = accuracy_score(y_test, y_pred)
     return acc
-              
-run_evaluation("latest")

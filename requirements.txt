@@ -5,3 +5,6 @@ pytest
 dvc
 dvc-gs
 mlflow
+fastapi
+pydantic
+uvicorn
