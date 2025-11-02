@@ -39,10 +39,6 @@ jobs:
       uses: azure/setup-kubectl@v3
       with:
         version: 'latest'
-    
-    - name: Install gke-gcloud-auth-plugin
-      run: |
-        sudo apt-get update
 
     - name: Install gcloud CLI and GKE auth plugin
       run: |
