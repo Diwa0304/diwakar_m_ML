@@ -4,6 +4,6 @@ __pycache__/
 *.joblib
 models/
 
-.ipynb_checkpoints/
+*/.ipynb_checkpoints/
 params.yaml
 mlruns/
