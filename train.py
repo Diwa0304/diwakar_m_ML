@@ -61,7 +61,7 @@ joblib.dump(model, "models/iris_classifier.joblib")
 joblib.dump(encoder, "models/encoder.joblib")
 X_test.to_csv("data/X_test.csv", index=False)
 y_test.to_csv("data/y_test.csv", index=False)
-
+'''
 # MLFlow loggings
 with mlflow.start_run(run_name="Logistic-regression-elasticnet-C0.5"):
     mlflow.log_params(params)
@@ -101,3 +101,4 @@ try:
 
 except Exception as e:
     print(f"Error logging metrics: {e}")
+'''
