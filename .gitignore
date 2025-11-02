@@ -2,7 +2,6 @@ venv/
 __pycache__/
 *.pyc
 *.joblib
-models/
 
 **/.ipynb_checkpoints/
 params.yaml
