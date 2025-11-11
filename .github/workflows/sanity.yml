@@ -34,12 +34,11 @@ jobs:
       
     - name: Authenticate and pull from DVC
       env:
-        GCP_B64: ${{ secrets.GCP_CREDENTIALS_B64 }}
-        DATA_FILE: iris_2.csv
+        GCP_B64: ${{ secrets.GCP_SA_KEY }}
       run: |
-        echo "$GCP_B64" | base64 -d > gcp-key.json
+        echo "$GCP_SA_KEY" > gcp-key.json
         export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/gcp-key.json
-        dvc pull ${{env.DATA_FILE}}
+        dvc pull
         
     - name: Debug MLflow Connection
       env:
