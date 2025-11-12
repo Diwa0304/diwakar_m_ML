@@ -32,8 +32,8 @@ jobs:
       
     - name: Build and push Docker image
       run: |
-        docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/iris-repo/iris-fastapi-app:latest .
-        docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/iris-repo/iris-fastapi-app:latest
+        docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/artifacts-repo-mlops/iris-fastapi-app:latest .
+        docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/artifacts-repo-mlops/iris-fastapi-app:latest
 
     - name: Set up kubectl
       uses: azure/setup-kubectl@v3
@@ -58,3 +58,12 @@ jobs:
 
     - name: Deploy to GKE
       run: kubectl apply -f k8s/
+
+  stress-test:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install wrk
+        run: sudo apt-get install wrk -y
+      - name: Run stress test
+        run: wrk -t4 -c1000 -d30s http://<service-url>/predict
